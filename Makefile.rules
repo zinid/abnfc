@@ -1,0 +1,106 @@
+# common make rules
+
+# uses: stuff defined in Makefile.defs
+
+#implicit rules
+%.o: %.c  $(ALLDEP)
+	$(CC) $(CFLAGS) $(INCLUDES) $(DEFS) $< -o $@
+
+%.d: %.c $(ALLDEP)
+	@set -e; $(MKDEP) $(CFLAGS) $(INCLUDES) $(DEFS) $< \
+	  |  sed 's#\(\($*D)\)\?$(*F)\)\.o[ :]*#$*.o $@ : #g' > $@; \
+	  [ -s $@ ] || rm -f $@
+
+%.c: %.rl $(ALLDEP)
+	$(RAGEL) $(RAGELFLAGS) $<
+
+$(NAME): $(objs) $(ALLDEP)
+	$(LD) $(LDFLAGS) $(objs) -o $(NAME)
+
+%.man: %.in $(ALLDEP)
+	nroff -man $< >$@
+
+%.html: %.in $(ALLDEP)	
+	man2html -r $< >$@
+
+%.dot: %.rl $(ALLDEP)
+	$(RAGEL) $(RAGELFLAGS) $< |$(RLGENDOT) $(RLGENDOTFLAGS) -o $@
+
+%.png: %.dot
+	dot $(DOTFLAGS) -Tpng $< -o $@
+
+%.jpg: %.dot
+	dot $(DOTFLAGS) -Tjpg $< -o $@
+
+%.gif: %.dot
+	dot $(DOTFLAGS) -Tgif $< -o $@
+
+%.ps: %.dot
+	dot $(DOTFLAGS) -Tps $< -o $@
+
+%.svg: %.dot
+	dot $(DOTFLAGS) -Tsvg $< -o $@
+
+.PHONY: all
+all: $(NAME) docs
+
+.PHONY: deps
+deps: $(depends)
+
+.PHONY: docs
+docs: $(gendocs)
+
+.PHONY: diagrams
+diagrams: $(diagrams)
+
+.PHONY: clean
+clean:
+	-@rm -f $(objs) $(depends) $(dotfiles) $(gensources) >/dev/null
+
+.PHONY: proper
+proper: clean
+	-@rm -f $(NAME) $(gendocs) $(diagrams) $(NAME)-src.$(VERSION).tgz
+
+.PHONY: tar
+tar: $(tarsources)
+	tar czf $(NAME)-src.$(VERSION).tgz $(tarsources)
+	
+.PHONY: print
+print: 
+	@echo Name: $(NAME)
+	@echo Version: $(VERSION)
+	@echo rlsources = $(rlsources)
+	@echo nongensources = $(nongensources)
+	@echo gensources = $(gensources)
+	@echo sources = $(sources)
+	@echo objs = $(objs)
+	@echo depends = $(depends)
+	@echo dotfiles = $(dotfiles)
+	@echo diagrams = $(diagrams)
+	@echo mansources = $(mansources)
+	@echo gendocs = $(gendocs)
+	@echo tarsources = $(tarsources)
+
+.PHONY: help
+help: 
+	@echo "Use make [command]"
+	@echo "Commands:"
+	@echo "all .. exe and docs"
+	@echo "clean .. clean generated files but not results (exe, manual, ..)"
+	@echo "proper .. remove all generated files"
+	@echo "docs .. build documentation"
+	@echo "tar" .. create tar of source files
+	@echo "diagrams .. build state machine diagrams using GraphViz"
+	@echo "print" .. print some macro values
+	@echo "_filename_ .. build specified filename"
+	
+	
+ifeq (,$(MAKECMDGOALS))
+-include $(depends)
+endif
+
+ifneq (,$(filter-out clean proper print docs diagrams help, $(MAKECMDGOALS)))
+	-include $(depends)
+endif
+				
+

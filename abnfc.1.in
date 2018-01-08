@@ -1,0 +1,118 @@
+.TH ABNFC 1 "Jun 22, 2007" "" ""
+.\" *  This file is part of abnf tools.
+.\" *
+.\" *  This program is free software; you can redistribute it and/or modify
+.\" *  it under the terms of the GNU General Public License as published by
+.\" *  the Free Software Foundation; either version 2 of the License, or
+.\" *  (at your option) any later version.
+.\" *
+.\" *  It is distributed in the hope that it will be useful,
+.\" *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" *  GNU General Public License for more details.
+.\" *
+.\" *  You should have received a copy of the GNU General Public License
+.\" *  along with Ragel; if not, write to the Free Software
+.\" *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+.SH NAME
+abnfc \- ABNF compiler
+.SH SYNOPSIS
+.BR "abnfc [options] <file> [[options] <file> ...]"
+.SH DESCRIPTION
+.B abnfc
+is ABNF (rfc2234) document parser and
+.B Ragel
+state machine generator. ABNF rules as read from input files, standard input or
+from built\-in list, checked and written in required format to output file
+or standard output.
+.SH OPTIONS
+One ore more input files may be specified, if no input file is specified then
+standard input is expected. Rules being read by latter files may override
+former rules having the same name. Rules defined using "=/" are
+merged. Built-in rules won't override any other rules but may be overriden.
+Special file name "-" forces reading of standard input. Standard input
+is also read when no file parameter is provided.
+
+Parameter is used for reading rules from internal list if name is known
+list name. If file name is in conflict with a list name then input
+format may be forced.
+
+
+Following built-in lists are supported:
+.TP
+.B "core"
+core RFC2234 rules
+.TP
+.BI "abnf"
+RFC2234 ABNF language definitions
+.TP
+
+The options that are recognized:
+.TP
+.BI "-f " "format"
+Format of next output file(s). Currently are recognized following formats.
+.TP
+.BI "abnf"
+print ABNF rules
+.TP
+.BI "ragel"
+print Ragel rules (default)
+.TP
+.BI "self"
+print abnfc C rules
+.TP
+.BI "-o " "output"
+output file name, default: stdout
+.TP
+.BI "-t " "in_type"
+overrides type of next input file parameter
+.TP
+.B "file"
+next file parameter(s) is file name
+.TP
+.B "self"
+next file parameter(s) first checked as internal rule list name.
+.TP
+.B "-F"
+Force output even a rule problem is detected.
+.TP
+.B "-v"
+Verbose output. Verbose output goes to stderr.
+.TP
+.B "-V"
+Print version.
+.TP
+.B "-h"
+.TP
+
+Examples:
+
+# pipe from stdin to stdout
+  abnfc -f abnf
+
+# load my.txt
+  abnfc my.txt -f ragel -o my.rl
+
+# load built-in rules core + abnf + my.txt
+  abnfc core abnf my.txt -f ragel -o my.rl
+
+# read RFC2234 core rules and RFC3261 and print to stdout
+  abnfc core rfc3261.txt -f ragel
+
+.SH BUGS
+Bugs?  Many. ;-)
+.SH SEE ALSO
+.BR ragel (1)
+.P
+The abnfc-HOWTO for more information.
+.br
+See
+.br
+.BR "http://www.2p.cz/en/abnf_gen"
+.br
+.BR "http://www.cs.queensu.ca/~thurston/ragel/"
+.SH AUTHORS
+.PP
+abnfc originally written by Tomas Mandys <tomas dot mandys at 2p dot cz>.
+.PP
+Man page originally written by Tomas Mandys <tomas dot mandys at 2p dot cz>.

@@ -1,0 +1,34 @@
+# common make definitions
+# uses: NAME, ALLDEP
+
+VERSION = 0.2
+
+CC = gcc
+LD = $(CC)
+RAGEL = ragel
+RLGENCD = rlgen-cd
+RLGENDOT = rlgen-dot
+MKDEP = $(CC) -MM
+
+INCLUDES ?=
+
+CFLAGS += -Wall -g -c
+LDFLAGS +=
+DEFS += -DVERSION=$(VERSION) -DNAME=$(NAME) -DVERSION_S='"$(VERSION)"' -DNAME_S='"$(NAME)"'
+LIBS +=
+RAGELFLAGS =
+RLGENCODEFLAGS ?= -l
+RLGENDOTFLAGS ?= -p
+
+# automatically generated files
+rlsources = $(wildcard parse_*.rl)
+gensources = $(rlsources:.rl=.c)
+nongensources = $(filter-out $(gensources), $(wildcard *.c))
+sources = $(nongensources) $(gensources)
+objs = $(sources:.c=.o)
+depends = $(sources:.c=.d)
+dotfiles = $(rlsources:.rl=.dot)
+diagrams = $(rlsources:.rl=.png) $(rlsources:.rl=.jpg) $(rlsources:.rl=.gif) $(rlsources:.rl=.ps) $(rlsources:.rl=.svg)
+mansources = $(wildcard *.in)
+gendocs = $(mansources:.in=.html) $(mansources:.in=.man)
+tarsources = $(rlsources) $(nongensources) $(wildcard *.h) $(mansources) $(wildcard *.txt) $(wildcard Makefile*)
