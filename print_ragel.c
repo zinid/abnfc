@@ -205,14 +205,15 @@ static void abnf_print_ragel_element(FILE *stream, struct abnf_rule *pr, struct 
 	}
 }
 
-void abnf_print_ragel_rules(FILE *stream, struct abnf_rule *rules, struct abnf_print_info *info) {
+void abnf_print_ragel_rules(FILE *stream, struct abnf_rule *rules, struct abnf_print_info *info,
+			    char *machine_name, int instantiate) {
 	struct abnf_rule *pr, *last_pr;
 	struct abnf_print_comment comment_def = {.pre_comment = NULL, .line_comment = "# ", .post_comment = NULL};
 
 	abnf_print_header(stream, info, &comment_def);
 
 	fprintf(stream, "%%%%{\n");
-	fprintf(stream, "\t# write your name\n\tmachine generated_from_abnf;\n\n\t# generated rules, define required actions\n");
+	fprintf(stream, "\t# write your name\n\tmachine %s;\n\n\t# generated rules, define required actions\n", machine_name);
 	last_pr = NULL;
 	for (pr = rules; pr; pr = pr->next) {
 		fprintf(stream, "\t%s = ", abnf_get_ragel_rule_name(pr->name, NULL));
@@ -220,11 +221,13 @@ void abnf_print_ragel_rules(FILE *stream, struct abnf_rule *rules, struct abnf_p
 		fprintf(stream, ";\n");
 		last_pr = pr;
 	}
-	fprintf(stream, "\n\t# instantiate machine rules\n");
-	if (last_pr)
-		fprintf(stream, "\tmain:= %s;\n", abnf_get_ragel_rule_name(last_pr->name, NULL));
-	else
-		fprintf(stream, "\t# main:= <rule_name>;\n");
+	if (instantiate) {
+	  fprintf(stream, "\n\t# instantiate machine rules\n");
+	  if (last_pr)
+	    fprintf(stream, "\tmain:= %s;\n", abnf_get_ragel_rule_name(last_pr->name, NULL));
+	  else
+	    fprintf(stream, "\t# main:= <rule_name>;\n");
+	}
 	fprintf(stream, "}%%%%\n");
 }
 

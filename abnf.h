@@ -177,7 +177,7 @@ extern int abnf_check_rules(FILE *stream, struct abnf_rule *rules);
 
 /* code located in print_*.c */
 extern void abnf_print_abnf_rules(FILE *stream, struct abnf_rule *rules, struct abnf_print_info *info);
-extern void abnf_print_ragel_rules(FILE *stream, struct abnf_rule *rules, struct abnf_print_info *info);
+extern void abnf_print_ragel_rules(FILE *stream, struct abnf_rule *rules, struct abnf_print_info *info, char* machine_name, int instantiate);
 extern void abnf_print_self_rules(FILE *stream, struct abnf_rule *rules, struct abnf_print_info *info);
 
 /* code located in parse_*.c */

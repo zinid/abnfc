@@ -57,6 +57,9 @@ static void print_help(char *name) {
 	printf("  -t in_type  type of next input file\n");
 	printf("              'file': load rules from file\n");
 	printf("              'self': load internal rules (default)\n");
+	printf("  -n name     name of the machine if format is 'ragel'\n");
+	printf("              the default is 'generated_from_abnf'\n");
+	printf("  -i          do not generate main rule if format is 'ragel'\n");
 	printf("\n");
 	printf("Common options:\n");
 	printf("  -F          print output even an ABNF rule error is detected\n");
@@ -91,8 +94,9 @@ int main(int argc, char** argv) {
 
 	enum {of_Default, of_Ragel, of_Abnf, of_Self} out_fmt = of_Default;
 	enum {if_File, if_Internal} cur_in_fmt = if_Internal, in_flags[MAX_IN_FILES];
-	static char short_opts[] = "+f:o:t:FhHvV";
-	int i, c, in_file_count = 0, force_flag = 0;
+	static char short_opts[] = "+f:o:t:n:FhHivV";
+	int i, c, in_file_count = 0, force_flag = 0, instantiate = 1;
+	char *machine_name = "generated_from_abnf";
 	struct abnf_str in_files[MAX_IN_FILES];
 	char *out_file = NULL;
 	struct abnf_rule *rules = NULL, *pr;
@@ -167,11 +171,22 @@ int main(int argc, char** argv) {
 						goto err;
 					}
 					break;
+			        case 'n':
+				        if (strlen(optarg)>0)
+					        machine_name = optarg;
+					else {
+					        fprintf(stderr, "ERROR: unknown format '-n %s'\n", optarg);
+						goto err;
+					}
+					break;
 				case 'o':
 					out_file = optarg;
 					break;
 				case 'F':
 					force_flag++;
+					break;
+			        case 'i':
+				        instantiate = 0;
 					break;
 				case 'v':
 					verbose++;
@@ -259,7 +274,8 @@ int main(int argc, char** argv) {
 		case of_Ragel:
 			if (verbose) fprintf(stdout, "outformat: ragel\n");
 			abnf_resolve_rule_dependencies(stderr, &rules);
-			abnf_print_ragel_rules(out_stream, rules, &info);
+			abnf_print_ragel_rules(out_stream, rules, &info,
+					       machine_name, instantiate);
 			break;
 		case of_Abnf:
 			if (verbose) fprintf(stdout, "outformat: abnf\n");
