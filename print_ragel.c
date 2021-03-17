@@ -51,7 +51,7 @@ static char* abnf_escape_char(char c) {
 			case '"':
 				return "\\\"";
 			case '\\':
-				return "\\";
+				return "\\\\";
 			default:
 				buff[0] = c;
 				buff[1] = '\0';
