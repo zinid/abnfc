@@ -341,9 +341,11 @@
 	char_val =
 		DQUOTE
 		( 0x20..0x21 | 0x23..0x7e )*
-			>{token_flag = 1; last_str.s = fpc;}
+			>{last_str.s = fpc;}
 			% {last_str.len = fpc-last_str.s;}
 		DQUOTE;
+        char_val_insensitive = ("%i")? %{token_flag = 1;} char_val;
+        char_val_sensitive = "%s" %{token_flag = 0;} char_val;
 	bin_val =
 		"b"i >{last_val_mult=2;}
 		BIT+ %set_value %^set_value %/set_value
@@ -378,10 +380,14 @@
 			%/{top_element = abnf_mk_element_rule(abnf_dupl_str(last_rulename)); DBG("%/rulename");}
 		| group
 		| option
-		| char_val
+		| char_val_insensitive
 			%{top_element = abnf_mk_element_token(abnf_dupl_str(last_str));}
-			%^{top_element = abnf_mk_element_token(abnf_dupl_str(last_str));DBG("%!charval");}
-			%/{top_element = abnf_mk_element_token(abnf_dupl_str(last_str));DBG("%/charval");}
+			%^{top_element = abnf_mk_element_token(abnf_dupl_str(last_str));DBG("%!charval_insensitive");}
+			%/{top_element = abnf_mk_element_token(abnf_dupl_str(last_str));DBG("%/charval_insensitive");}
+                | char_val_sensitive
+			%{top_element = abnf_mk_element_string(abnf_dupl_str(last_str));}
+			%^{top_element = abnf_mk_element_string(abnf_dupl_str(last_str));DBG("%!charval_sensitive");}
+			%/{top_element = abnf_mk_element_string(abnf_dupl_str(last_str));DBG("%/charval_sensitive");}
 		| num_val
 		| ( prose_val
 			%{top_element = abnf_mk_element_string(abnf_dupl_str(last_str));}
